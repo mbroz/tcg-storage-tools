@@ -55,17 +55,18 @@ static int discovery(int fd)
 		printf("IOC_OPAL_DISCOVERY failed\n");
 		return r;
 	}
-	print_hex(buf, discovery.size);
 
 	dh = (struct level_0_discovery_header *)buf;
 	feat_ptr = buf + sizeof(*dh);
 	feat_end = buf + be32_to_cpu(dh->length);
 
-	printf("Discovery0 [len %d]\n", be32_to_cpu(dh->length));
+	/* Length not including length field itself [3.3.6 Core spec] */
+	printf("Discovery0 [len %d]\n", be32_to_cpu(dh->length) + sizeof(dh->length));
 	print_hex(dh, sizeof(*dh));
 
 	while (feat_ptr < feat_end) {
 		feat_hdr = feat_ptr;
+		/* Length defines data following the header [3.3.6 Core spec] */
 		feat_length = feat_hdr->length + sizeof(*feat_hdr);
 		printf("Feature 0x%03x [len %d] ", be16_to_cpu(feat_hdr->feature_code), feat_length);
 
