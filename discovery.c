@@ -48,7 +48,14 @@ static int status(int fd)
 		return r;
 	}
 
-	printf("Opal status flags: %04x\n", st.flags);
+	printf("Opal status flags: %04x\n%s%s%s%s%s%s%s", st.flags,
+		st.flags & OPAL_FL_SUPPORTED ? " OPAL_FL_SUPPORTED\n" : "",
+		st.flags & OPAL_FL_LOCKING_SUPPORTED ? " OPAL_FL_LOCKING_SUPPORTED\n" : "",
+		st.flags & OPAL_FL_LOCKING_ENABLED ? " OPAL_FL_LOCKING_ENABLED\n" : "",
+		st.flags & OPAL_FL_LOCKED ? " OPAL_FL_LOCKED\n" : "",
+		st.flags & OPAL_FL_MBR_ENABLED ? " OPAL_FL_MBR_ENABLED\n" : "",
+		st.flags & OPAL_FL_MBR_DONE ? " OPAL_FL_MBR_DONE\n" : "",
+		st.flags & OPAL_FL_SUM_SUPPORTED ? " OPAL_FL_SUM_SUPPORTED\n" : "");
 }
 
 static int discovery(int fd)
