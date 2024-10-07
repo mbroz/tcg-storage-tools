@@ -37,6 +37,20 @@ static void print_hex(const void *ptr, unsigned len)
 	printf("\n");
 }
 
+static int status(int fd)
+{
+	struct opal_status st;
+	int r;
+
+	r = ioctl(fd, IOC_OPAL_GET_STATUS, &st);
+	if (r < 0) {
+		printf("IOC_OPAL_GET_STATUS failed\n");
+		return r;
+	}
+
+	printf("Opal status flags: %04x\n", st.flags);
+}
+
 static int discovery(int fd)
 {
 	int r, feat_length;
@@ -124,6 +138,7 @@ int main (int argc, char *argv[])
 		return 1;
 	}
 
+	status(fd);
 	discovery(fd);
 
 	close(fd);
