@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -46,7 +47,7 @@ static int status(int fd, bool debug)
 	r = ioctl(fd, IOC_OPAL_GET_STATUS, &st);
 	if (r < 0) {
 		printf("IOC_OPAL_GET_STATUS failed\n");
-		return r;
+		return EXIT_FAILURE;
 	}
 
 	printf("Opal status flags: %04x\n%s%s%s%s%s%s%s", st.flags,
@@ -57,6 +58,8 @@ static int status(int fd, bool debug)
 		st.flags & OPAL_FL_MBR_ENABLED ? " OPAL_FL_MBR_ENABLED\n" : "",
 		st.flags & OPAL_FL_MBR_DONE ? " OPAL_FL_MBR_DONE\n" : "",
 		st.flags & OPAL_FL_SUM_SUPPORTED ? " OPAL_FL_SUM_SUPPORTED\n" : "");
+
+	return EXIT_SUCCESS;
 }
 
 static int discovery(int fd, bool debug)
@@ -75,7 +78,7 @@ static int discovery(int fd, bool debug)
 	r = ioctl(fd, IOC_OPAL_DISCOVERY, &discovery);
 	if (r < 0) {
 		printf("IOC_OPAL_DISCOVERY failed\n");
-		return r;
+		return EXIT_FAILURE;
 	}
 
 	dh = (struct level_0_discovery_header *)buf;
@@ -140,7 +143,7 @@ int main (int argc, char *argv[])
 
 	if (argc < 2) {
 		printf("use <device> as parameter\n");
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	if (argc > 2 && !strcmp(argv[2], "--debug"))
@@ -149,12 +152,15 @@ int main (int argc, char *argv[])
 	fd = open(argv[1], O_RDONLY);
 	if (fd == -1) {
 		printf("open fail\n");
-		return 1;
+		return EXIT_FAILURE;
 	}
 
-	status(fd, debug);
-	discovery(fd, debug);
+	r = status(fd, debug);
+
+	/* Not all kernels support discovery */
+	if (r == EXIT_SUCCESS)
+		(void)discovery(fd, debug);
 
 	close(fd);
-	return 0;
+	return r;
 }
