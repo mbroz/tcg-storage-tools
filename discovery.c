@@ -86,7 +86,7 @@ static int discovery(int fd, bool debug)
 	feat_end = buf + be32_to_cpu(dh->length);
 
 	/* Length not including length field itself [3.3.6 Core spec] */
-	printf("Discovery0 [len %d]\n", be32_to_cpu(dh->length) + sizeof(dh->length));
+	printf("Discovery0 [len %ld]\n", be32_to_cpu(dh->length) + sizeof(dh->length));
 	if (debug)
 		print_hex(dh, sizeof(*dh));
 
