@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/sed-opal.h>
@@ -37,7 +38,7 @@ static void print_hex(const void *ptr, unsigned len)
 	printf("\n");
 }
 
-static int status(int fd)
+static int status(int fd, bool debug)
 {
 	struct opal_status st;
 	int r;
@@ -58,7 +59,7 @@ static int status(int fd)
 		st.flags & OPAL_FL_SUM_SUPPORTED ? " OPAL_FL_SUM_SUPPORTED\n" : "");
 }
 
-static int discovery(int fd)
+static int discovery(int fd, bool debug)
 {
 	int r, feat_length;
 	struct opal_discovery discovery;
@@ -83,7 +84,8 @@ static int discovery(int fd)
 
 	/* Length not including length field itself [3.3.6 Core spec] */
 	printf("Discovery0 [len %d]\n", be32_to_cpu(dh->length) + sizeof(dh->length));
-	print_hex(dh, sizeof(*dh));
+	if (debug)
+		print_hex(dh, sizeof(*dh));
 
 	while (feat_ptr < feat_end) {
 		feat_hdr = feat_ptr;
@@ -123,7 +125,8 @@ static int discovery(int fd)
 		default: printf("(unknown)\n"); break;
 		}
 
-		print_hex(feat_ptr, feat_length);
+		if (debug)
+			print_hex(feat_ptr, feat_length);
 		feat_ptr += feat_length;
 	}
 
@@ -132,12 +135,16 @@ static int discovery(int fd)
 
 int main (int argc, char *argv[])
 {
-	int fd;
+	bool debug = false;
+	int fd, r;
 
 	if (argc < 2) {
 		printf("use <device> as parameter\n");
 		return 1;
 	}
+
+	if (argc > 2 && !strcmp(argv[2], "--debug"))
+		debug = true;
 
 	fd = open(argv[1], O_RDONLY);
 	if (fd == -1) {
@@ -145,8 +152,8 @@ int main (int argc, char *argv[])
 		return 1;
 	}
 
-	status(fd);
-	discovery(fd);
+	status(fd, debug);
+	discovery(fd, debug);
 
 	close(fd);
 	return 0;
