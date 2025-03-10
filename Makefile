@@ -1,18 +1,20 @@
-TARGET=discovery
 #CPPFLAGS=
 #CFLAGS=-O0 -g -Wall
 #LDLIBS=
 #CC=gcc
 
-SOURCES=$(wildcard *.c)
-OBJECTS=$(SOURCES:.c=.o)
+#SOURCES=$(wildcard *.c)
+#OBJECTS=$(SOURCES:.c=.o)
 
-all: $(TARGET)
+all: discovery
 
-$(TARGET): $(OBJECTS)
+discovery: discovery.o
+	$(CC) -o $@ $^ $(LDLIBS)
+
+test: test.o
 	$(CC) -o $@ $^ $(LDLIBS)
 
 clean:
-	rm -f *.o *~ core $(TARGET)
+	rm -f *.o *~ core test discovery
 
 .PHONY: clean
