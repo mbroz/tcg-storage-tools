@@ -45,8 +45,8 @@ static int status(int fd, bool debug)
 	int r;
 
 	r = ioctl(fd, IOC_OPAL_GET_STATUS, &st);
-	if (r < 0) {
-		printf("IOC_OPAL_GET_STATUS failed\n");
+	if (r) {
+		printf("IOC_OPAL_GET_STATUS failed (%d)\n", r);
 		return EXIT_FAILURE;
 	}
 
@@ -71,13 +71,14 @@ static int discovery(int fd, bool debug)
 	char buf[4096];
 	void *feat_ptr, *feat_end;
 
-	discovery.data = (uint64_t)buf;
+	discovery.data = (uintptr_t)buf;
 	discovery.size = sizeof(buf);
 	memset(buf, 0, sizeof(buf));
 
 	r = ioctl(fd, IOC_OPAL_DISCOVERY, &discovery);
+	/* This ioctl is misdesigned, as it returns data size... */
 	if (r < 0) {
-		printf("IOC_OPAL_DISCOVERY failed\n");
+		printf("IOC_OPAL_DISCOVERY failed (%d)\n", r);
 		return EXIT_FAILURE;
 	}
 
@@ -86,7 +87,7 @@ static int discovery(int fd, bool debug)
 	feat_end = buf + be32_to_cpu(dh->length);
 
 	/* Length not including length field itself [3.3.6 Core spec] */
-	printf("Discovery0 [len %ld]\n", be32_to_cpu(dh->length) + sizeof(dh->length));
+	printf("Discovery0 [len %zu]\n", be32_to_cpu(dh->length) + sizeof(dh->length));
 	if (debug)
 		print_hex(dh, sizeof(*dh));
 
