@@ -94,6 +94,13 @@ static int setup_opal(int fd, bool debug)
 			.opal_key = USER_KEY_DEF
 		}
 	};
+	// IOC_OPAL_ERASE_LR
+	struct opal_session_info erase_session = {
+		//.sum = 1,
+		.who = OPAL_ADMIN1,
+		.opal_key = USER_KEY_DEF
+	};
+
 	int r;
 
 	r = ioctl(fd, IOC_OPAL_TAKE_OWNERSHIP, &lrs.key);
@@ -137,6 +144,13 @@ static int setup_opal(int fd, bool debug)
 		return EXIT_FAILURE;
 	}
 	printf("IOC_OPAL_LOCK_UNLOCK [OK]\n");
+
+	r = ioctl(fd, IOC_OPAL_ERASE_LR, &erase_session);
+	if (r) {
+		printf("IOC_OPAL_ERASE_LR failed (%d)\n", r);
+		return EXIT_FAILURE;
+	}
+	printf("IOC_OPAL_ERASE_LR [OK]\n");
 
 	return EXIT_SUCCESS;
 }
